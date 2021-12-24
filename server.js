@@ -1,13 +1,19 @@
 require('dotenv').config();
 
-const twitch = require('./config/twitchGames');
-
-const routes = require('./routes/api');
+const routes = require('./src/routes/api');
 
 const express = require('express');
 
+const bodyParser = require("body-parser");
 
 const app = express();
+
+app.use(bodyParser.urlencoded({
+    extended: false
+}));
+
+app.use(bodyParser.json());
+
 
 //routes
 

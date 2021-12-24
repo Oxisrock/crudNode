@@ -2,6 +2,7 @@ const axios = require('axios');
 
 var access_key = '' ;
 
+
 const getToken = (url) => {
     const options = {
         client_id: process.env.CLIENT_ID,
@@ -29,7 +30,7 @@ const getGames = (url,access_key) => {
     axios.get(url, {headers})
     .then(function (response) {
         // handle success
-        console.log(response.data);
+        return(response.data);
     })
     .catch(function (error) {
         // handle error
@@ -43,4 +44,4 @@ const getGames = (url,access_key) => {
 
 setTimeout(() => {
     getGames(process.env.GET_GAMES,access_key);
-}, 1000);
+}, 2000);
