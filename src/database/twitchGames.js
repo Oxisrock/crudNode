@@ -2,43 +2,33 @@ require('dotenv').config();
 
 const axios = require('axios');
 module.exports = class Twitchgames {
-    access_key = '';
-    getToken = () => {
+    accessKey = '';
+    constructor() {
+        (async () => {
+           this.accessKey = await this.getToken();
+        })();
+        
+    }
+    getToken = async () => {
         const options = {
             client_id: process.env.CLIENT_ID,
             client_secret: process.env.CLIENT_SECRET,
             grant_type: 'client_credentials',
         }
     
-        axios.post(process.env.GET_TOKEN,options)
-          .then(function (response) {
-            return response.data.access_token;
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
+        const {data:tokenData} = await axios.post(process.env.GET_TOKEN,options);
+        
+        
+        return tokenData.access_token;
     }
     
-    getGames = () => {
-        console.log(this.getToken());
+    getGames = async () => {
         const headers = {
             'Client-ID':process.env.CLIENT_ID,
-            'Authorization': 'Bearer ' + access_key
+            'Authorization': 'Bearer ' + this.accessKey
         };
-        setTimeout(() => {
-            axios.get(process.env.GET_GAMES, {headers})
-                .then(function (response) {
-                    // handle success
-                    console.log(response.data);
-                })
-                .catch(function (error) {
-                    // handle error
-                    console.log(error);
-                })
-                .then(function () {
-                    // always executed
-                });
-        }, 1000);
-    
+        const {data:games} = await axios.get(process.env.GET_GAMES, {headers});
+        
+        return games;
     }    
 }

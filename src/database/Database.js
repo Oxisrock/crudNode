@@ -111,31 +111,32 @@ module.exports = class Database {
     this.instance.execSql(request);
 }
 
-  insertSQL(req, callback = (options = {message: '',data: null}) => undefined, onError = (error) => null) {
-    const request = new Request("INSERT dbo.games (id, name, image) OUTPUT INSERTED.id VALUES (@id, @name, @image);", function(err) {  
-        if (err) {
-          onError(err);  
-        }  
-      });  
-
-      request.addParameter('id', TYPES.Int, req.id);  
-      request.addParameter('name', TYPES.NVarChar,req.name);  
-      request.addParameter('image', TYPES.NVarChar , req.image);  
-
-      request.on('row', function(columns) {  
-          columns.forEach(function(column) {  
-            if (column.value === null) { 
-              console.log({message: 'Row not found', data:null});  
-            } else {
-              callback({message: 'Create new row', data:column.value});   
-            }  
-          });  
+  insertSQL(item, callback = (options = {message: '',data: null}) => undefined, onError = (error) => null) {
+    const registers = item;
+    const request = new Request("INSERT dbo.games (id, name, image) OUTPUT INSERTED.id VALUES (@id, @name, @image);", (err, rowCount, rows) => {  
+          if (err) {
+            onError(err);
+        } else {
+            console.log(rowCount + ' row(s) inserted');
+            
+        }
       });
+
+      request.addParameter('id', TYPES.Int, item.id);
+      
+      request.addParameter('name', TYPES.NVarChar, item.name);
+
+      request.addParameter('image', TYPES.NVarChar , item.image);
 
       // Close the connection after the final event emitted by the request, after the callback passes
       request.on("requestCompleted", function (rowCount, more) {
-        console.log('registro');
+        callback({message: 'REGISTRO', registers });
       });
       this.instance.execSql(request);  
-  }  
+  }
+  reset() {
+    this.instance.reset((err) => {
+      console.log(err);
+    });
+  }
 }
