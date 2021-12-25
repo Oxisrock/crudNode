@@ -28,7 +28,6 @@ module.exports = class Database {
 
   connect() {
     this.instance.on('connect', async err => {
-      console.log('test');
       if (err) return console.log(err);
     
       console.log('SQL SERVER CONNECTED');
@@ -91,7 +90,7 @@ module.exports = class Database {
 
     // Update the employee record requested
     const request = new Request(
-    'UPDATE dbo.games SET name=@name image=@image WHERE id = @id;',
+    'UPDATE dbo.games SET name=@name, image=@image WHERE id = @id;',
     function(err, rowCount, rows) {
         if (err) {
         callback(err);
@@ -100,9 +99,11 @@ module.exports = class Database {
         callback(null, 'Jared');
         }
     });
+    
     request.addParameter('id', TYPES.Int, id);
     request.addParameter('name', TYPES.NVarChar, req.name);
     request.addParameter('image', TYPES.NVarChar, req.image);
+    
     request.on("requestCompleted", function (rowCount, more) {
       console.log('UPDATE GAME'+ id);
     });

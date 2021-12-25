@@ -1,8 +1,8 @@
 const express = require('express');
 
-const Database = require('../database/Database.js');
+const Database = require('../database/Database');
 
-const twitch = require('../database/twitchGames');
+const Twitch = require('../database/Twitchgames');
 
 const router = express.Router();
 
@@ -21,10 +21,16 @@ const config = {
   };
 
 const db = new Database(config);
-
+const twitch = new Twitch();
 db.connect();
 
 router
+.get('/api/twitch/games/create', (req,res) => {
+    twitch.getGames();
+    res.json({data:'new games'}).status(202);
+    //Twitch.getGames;
+})
+
 .get('/api/games', (req,res) => {
     db.executeSQL('SELECT * FROM dbo.games').then((result) => {
         res.json({data:result}).status(202);
