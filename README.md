@@ -23,29 +23,29 @@ SQL_DB=twitchgames {db sql server}
 
 # ENDPOINTS
 
-POST {server}/api/start/
+- [ ]  **POST** {server}/api/start/
 
 Para crear la tabla en la db y hacer los juegos de twitch funcionen como un seeder
 
-GET {server}/api/twitch/games
+- [ ]  **GET** {server}/api/twitch/games
 
 Para traerse los juegos que tiene
 
   
 
-GET {server}/api/games
+- [ ] **GET** {server}/api/games
 
 Para traerse los juegos que se tiene registrado en la tabla
 
   
 
-GET {server}/api/game/{idTwitch}
+- [ ] **GET** {server}/api/game/{idTwitch}
 
 Para traerse un juego especifico que se tiene registrado en la tabla
 
   
 
-PUT {server}/api/game/update/{idTwitch}
+- [ ] **PUT** {server}/api/game/update/{idTwitch}
 
 recibe por body : name y image
 
@@ -53,7 +53,7 @@ Para actualizar un juego especifico que se tiene registrado en la tabla
 
   
 
-PUT {server}/api/game/delete/{idTwitch}
+- [ ] **PUT** {server}/api/game/delete/{idTwitch}
 
 Para eliminar un juego especifico que se tiene registrado en la tabla
 
@@ -61,8 +61,8 @@ Para eliminar un juego especifico que se tiene registrado en la tabla
 
 ## Se utilizo la siguiente documentacion de la libreria tedious
 
-http://tediousjs.github.io/tedious/index.html
+ - http://tediousjs.github.io/tedious/index.html
 
   
 
-https://docs.microsoft.com/en-us/sql/connect/node-js/step-1-configure-development-environment-for-node-js-development?view=sql-server-ver15
+ - https://docs.microsoft.com/en-us/sql/connect/node-js/step-1-configure-development-environment-for-node-js-development?view=sql-server-ver15
