@@ -53,7 +53,7 @@ Para actualizar un juego especifico que se tiene registrado en la tabla
 
   
 
-- [ ] **PUT** {server}/api/game/delete/{idTwitch}
+- [ ] **DELETE** {server}/api/game/delete/{idTwitch}
 
 Para eliminar un juego especifico que se tiene registrado en la tabla
 
