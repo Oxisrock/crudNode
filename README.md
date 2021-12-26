@@ -29,7 +29,7 @@ Para crear la tabla en la db y hacer los juegos de twitch funcionen como un seed
 
 - [ ]  **GET** {server}/api/twitch/games
 
-Para traerse los juegos que tiene
+Para traerse los juegos que tiene twitch en su api
 
   
 
