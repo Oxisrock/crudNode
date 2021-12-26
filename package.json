@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "nodemon src/server.js"
   },
   "author": "Francisco Aular",
   "license": "MIT",
@@ -17,5 +17,8 @@
     "mysql": "^2.18.1",
     "request": "^2.88.2",
     "tedious": "^14.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
   }
 }

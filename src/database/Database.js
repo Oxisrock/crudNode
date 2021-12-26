@@ -1,7 +1,7 @@
 const { Connection } = require('tedious');
 const { Request } = require('tedious');
 const TYPES = require('tedious').TYPES;  
-  
+const Twitch = require('../database/Twitchgames');
 module.exports = class Database {
   defaultConfig = {
     server: 'process.env.SQL_SERVER',
@@ -26,14 +26,50 @@ module.exports = class Database {
     this.instance = new Connection(this.config);
   }
 
+  
+
   connect() {
     this.instance.on('connect', async err => {
       if (err) return console.log(err);
-    
+      
       console.log('SQL SERVER CONNECTED');
     
     });
     this.instance.connect();
+  }
+
+  createTable(games) {
+    const sql = `CREATE TABLE ${process.env.SQL_DB} ([id] [int] IDENTITY(1,1) PRIMARY KEY,[name] [NVarChar](500),[image] [NVarChar](500), [idTwitch] [int])`;
+    const request = new Request(sql, (err) => {
+      if (err) {
+        throw err;
+      }
+  
+      console.log(`'${process.env.SQL_DB}' created!`);
+      this.loadBulkData(games);
+    });
+  
+    this.instance.execSql(request);
+  }
+
+  loadBulkData(games) {
+    const option = { keepNulls: true }; // option to enable null values
+    const bulkLoad = this.instance.newBulkLoad(process.env.SQL_DB, option, (err, rowCont) => {
+      if (err) {
+        throw err;
+      }
+  
+      console.log('rows inserted :', rowCont);
+      console.log('DONE!');
+      this.instance.close();
+    });
+  
+    // setup columns
+    bulkLoad.addColumn('name', TYPES.NVarChar, {nullable: true });
+    bulkLoad.addColumn('image', TYPES.NVarChar, {nullable: true });
+    bulkLoad.addColumn('idTwitch', TYPES.Int, { nullable: true });
+    this.instance.execBulkLoad(bulkLoad, games);    
+    // perform bulk insert
   }
   //READ and QUERY
   async executeSQL(query = '') {
@@ -66,10 +102,9 @@ module.exports = class Database {
   }
 
   deleteSQL(id) {
-    console.log("Deleting '" + id + "' from Table...");
   
       const request = new Request(
-          'DELETE FROM dbo.games WHERE id = @id;',
+        `DELETE FROM dbo.${process.env.SQL_DB} WHERE idTwitch = @id;`,
           function(err, rowCount, rows) {
           if (err) {
               console.log(err);
@@ -90,7 +125,7 @@ module.exports = class Database {
 
     // Update the employee record requested
     const request = new Request(
-    'UPDATE dbo.games SET name=@name, image=@image WHERE id = @id;',
+      `UPDATE dbo.${process.env.SQL_DB} SET name=@name, image=@image WHERE idTwitch = @id;`,
     function(err, rowCount, rows) {
         if (err) {
         callback(err);
@@ -111,32 +146,30 @@ module.exports = class Database {
     this.instance.execSql(request);
 }
 
-  insertSQL(item, callback = (options = {message: '',data: null}) => undefined, onError = (error) => null) {
-    const registers = item;
-    const request = new Request("INSERT dbo.games (id, name, image) OUTPUT INSERTED.id VALUES (@id, @name, @image);", (err, rowCount, rows) => {  
-          if (err) {
-            onError(err);
-        } else {
-            console.log(rowCount + ' row(s) inserted');
-            
-        }
-      });
-
-      request.addParameter('id', TYPES.Int, item.id);
-      
-      request.addParameter('name', TYPES.NVarChar, item.name);
-
-      request.addParameter('image', TYPES.NVarChar , item.image);
-
-      // Close the connection after the final event emitted by the request, after the callback passes
-      request.on("requestCompleted", function (rowCount, more) {
-        callback({message: 'REGISTRO', registers });
-      });
-      this.instance.execSql(request);  
-  }
-  reset() {
-    this.instance.reset((err) => {
-      console.log(err);
+  insertSqlPromise = async (item={}) => {
+    return new Promise((resolve,reject) => {
+      const request = new Request(`INSERT dbo.${process.env.SQL_DB} (name,image,idTwitch) OUTPUT INSERTED.idTwitch VALUES (@name,@image,@idTwitch);`, (err, rowCount, rows) => {  
+        if (err) {
+          reject(err);
+      } else {
+          //console.log(rowCount + ' row(s) inserted');
+          
+      }
     });
+    
+    request.addParameter('name', TYPES.NVarChar, item.name);
+
+    request.addParameter('image', TYPES.NVarChar , item.image);
+    
+    request.addParameter('idTwitch', TYPES.Int, item.id_twitch);
+
+    // Close the connection after the final event emitted by the request, after the callback passes
+    request.on("requestCompleted",  (rowCount, more) =>  {
+      resolve({message: 'REGISTRO', item });
+    });
+
+    this.instance.execSql(request);  
+    
+    })
   }
 }

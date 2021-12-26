@@ -23,53 +23,48 @@ const config = {
 const db = new Database(config);
 const twitch = new Twitch();
 db.connect();
-
 router
+.post('/api/start/', async (req,res) => {
+    const games = await twitch.getGames();
+    const gamesFormated = games.data.map((item) => ({
+        name:item.name,
+        image:item.box_art_url.replace('{width}','285').replace('{height}','380'),
+        idTwitch:item.id
+    }));
+    db.createTable(gamesFormated);
+    res.json({data:'SEEDER'}).status(202).end();
+})
 .get('/api/twitch/games/', async (req,res) => {
     
     const games = await twitch.getGames();
     
     res.json({data:games.data}).status(202).end();
-    //Twitch.getGames;
-})
-.post('/api/twitch/games/create', async (req,res) => {
-    const games = await twitch.getGames();
-    const gamesFormated = games.data.map((item) => ({
-        id:item.id,
-        name:item.name,
-        image:item.box_art_url.replace('{width}','285').replace('{height}','380')
-    }));
-    let result = [];
-    gamesFormated.forEach((item,index) => {
-        db.insertSQL(item,({message='',data=null}) => {
-            if(index === gamesFormated.length - 1 ) {
-                if(data) result.push(data);
-                res.json({message,data:result}).status(result ? 200 : 404).end();
-            } else if(data) {
-                 result.push(data);
-            }
-        });
-    });
 })
 
 .get('/api/games', (req,res) => {
-    db.executeSQL('SELECT * FROM dbo.games').then((result) => {
+    db.executeSQL(`SELECT * FROM dbo.${process.env.SQL_DB}`).then((result) => {
         res.json({data:result}).status(202).end();
     });
 })
-.post('/api/games/create', (req,res) => {
-    const {id,name,image} = req.body;
-    if(!id) return res.json({ok:'id required'}).status(404);
+.post('/api/games/create', async (req,res) => {
+    const {id_twitch,name,image} = req.body;
+    
+    if(!id_twitch) return res.json({ok:'id required'}).status(404);
     if(!name) return res.json({ok:'name required'}).status(404);
     if(!image) return res.json({ok:'image required'}).status(404);
-    db.insertSQL(req.body,({message='',data=null}) => {
-        res.json({message,data}).status(data ? 202 : 404).end();
-    });
+
+    try {
+        const insert = await db.insertSqlPromise(req.body) 
+        res.json(insert).status(202).end();
+    } catch (error) {
+        res.json(error).status(404).end();
+    }
+    
 })
 
 .get('/api/game/:id', (req,res) => {
-    let id = req.params.id;
-    db.executeSQL('SELECT * FROM dbo.games WHERE id = '+ id).then((result) => {
+    const {id} = req.params;
+    db.executeSQL(`SELECT * FROM dbo.${process.env.SQL_DB} WHERE idTwitch = `+ id).then((result) => {
         res.json({data:result}).status(202).end();
     });
 })
@@ -83,9 +78,9 @@ router
     res.json({data:'updated'}).status(200).end();
 })
 .delete('/api/game/delete/:id', (req,res) => {
-    let id = req.params.id;
+    const {id} = req.params;
     db.deleteSQL(id);
-    res.json({data:'ok'}).status(200).end();
+    res.json({data:'DELETED'}).status(200).end();
 });
 
 module.exports = router
